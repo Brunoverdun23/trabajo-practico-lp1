@@ -141,7 +141,19 @@ for(int i = 0; i < 4; i++) {
 }
 ```
 
+## 3-Inteligencia Artificial y Búsqueda de Caminos (BFS)
 
+Nuestros fantasmas no se mueven mediante rutas predefinidas. Utilizan teoría de grafos y probabilidad para tomar decisiones dinámicas en un mapa que cambia constantemente debido a la colocación y destrucción de muros.
+
+### 3.1. Sistema de Dificultad Escalable
+El comportamiento de la IA se define por su nivel de dificultad. En lugar de cambiar la velocidad de movimiento, modificamos su capacidad de tomar decisiones tácticas perfectas mediante el uso de probabilidad.
+
+```c
+// Dificultad 3: IA perfecta permanente. 
+// Dificultad 2: 50% de probabilidad de usar IA perfecta o moverse al azar.
+int dif_actual = p->fantasmas[i].dificultad;
+if (dif_actual == 3) usar_ia = true;
+else if (dif_actual == 2) usar_ia = (GetRandomValue(0, 1) == 0);
 
 
 
