@@ -154,6 +154,26 @@ El comportamiento de la IA se define por su nivel de dificultad. En lugar de cam
 int dif_actual = p->fantasmas[i].dificultad;
 if (dif_actual == 3) usar_ia = true;
 else if (dif_actual == 2) usar_ia = (GetRandomValue(0, 1) == 0);
+```
+
+### 3.2. Inicialización del BFS y Memoria Dinámica
+Cuando un fantasma decide usar la IA, calculamos el camino más corto hacia Pac-Man usando el algoritmo de Búsqueda en Anchura (BFS). Primero, inicializamos un mapa de distancias y construimos una Cola (Queue) utilizando asignación de memoria dinámica.
+
+```c
+// Inicialización del mapa con -1 (nodos no visitados)
+for(int i = 0; i < p->filas; i++) {
+    for(int j = 0; j < p->cols; j++) dist[i][j] = -1;
+}
+
+// Creación de la Cola FIFO dinámica en el Heap
+Posicion *queue = malloc(p->filas * p->cols * sizeof(Posicion));
+int head = 0, tail = 0;
+
+// Pac-Man es el epicentro de la búsqueda (distancia 0)
+Posicion inicio = p->pacman.pos;
+dist[inicio.f][inicio.c] = 0;
+queue[tail++] = inicio;
+```
 
 
 
