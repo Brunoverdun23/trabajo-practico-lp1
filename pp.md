@@ -175,8 +175,32 @@ dist[inicio.f][inicio.c] = 0;
 queue[tail++] = inicio;
 ```
 
+## 3.3. La Propagación de la Onda Matemática
+El algoritmo extrae posiciones de la cabeza de la cola y expande la búsqueda en sus 4 celdas vecinas. Si un vecino es válido (no cruza un muro bloqueado) y no ha sido visitado, se registra su distancia.
 
+ ```c
+int df[] = {-1, 1, 0, 0};
+int dc[] = {0, 0, -1, 1};
 
+while(head < tail) {
+    Posicion curr = queue[head++];
+    for(int i = 0; i < 4; i++) {
+        Posicion sig = {curr.f + df[i], curr.c + dc[i]};
+        
+        // Verificamos límites del mapa
+        if (sig.f >= 0 && sig.f < p->filas && sig.c >= 0 && sig.c < p->cols) {
+            
+            // Evaluamos intersección con muros dinámicos
+            if (dist[sig.f][sig.c] == -1 && EsMovimientoValido(p, curr, sig)) {
+                
+                dist[sig.f][sig.c] = dist[curr.f][curr.c] + 1; // Registra la distancia matemática
+                queue[tail++] = sig;                           // Encola para continuar expandiendo
+            }
+        }
+    }
+}
+free(queue); // Prevención estricta de fugas de memoria (Memory Leaks)
+```
 
 
 
