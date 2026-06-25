@@ -18,9 +18,11 @@ Abre tu terminal en la carpeta raíz del proyecto y ejecuta el comando según tu
 Si tienes raylib configurado en las rutas por defecto de MinGW, ejecuta:
 ```c
 gcc main.c -o quoridor_pacman.exe -lraylib -lopengl32 -lgdi32 -lwinmm
+```
 ### En Linux:
 ```c
 gcc main.c -o quoridor_pacman -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
+```
 ## Cómo jugar
 El objetivo principal es devorar las 4 pac-bolas repartidas por el mapa sin ser atrapado por los fantasmas. Al comer una pac-bola, los fantasmas se vuelven vulnerables temporalmente.
 
