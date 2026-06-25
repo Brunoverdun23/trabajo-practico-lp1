@@ -12,7 +12,14 @@ Una adaptación estratégica en C que fusiona la recolección clásica de Pac-Ma
 
 Para compilar el juego a través de la terminal, asegúrate de tener instalado un compilador de C (`gcc` o `clang`) y la librería Raylib.
 
+### Instrucciones de Compilacion:
+Abre tu terminal en la carpeta raíz del proyecto y ejecuta el comando según tu sistema operativo:
+### En windows: 
+Si tienes raylib configurado en las rutas por defecto de MinGW, ejecuta:
 
+gcc main.c -o quoridor_pacman.exe -lraylib -lopengl32 -lgdi32 -lwinmm
+### En Linux:
+gcc main.c -o quoridor_pacman -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 ## Cómo jugar
 El objetivo principal es devorar las 4 pac-bolas repartidas por el mapa sin ser atrapado por los fantasmas. Al comer una pac-bola, los fantasmas se vuelven vulnerables temporalmente.
 
@@ -32,9 +39,9 @@ El juego funciona por un sistema de turnos estructurado.
 ## Controles de Fantasmas (Modo PvP)
 Si juegas en modo Player vs Player, el Jugador 2 controla los turnos de los fantasmas activos:
 
-Mover el fantasma actual: Usa las teclas [I], [K], [J], [L] (Arriba, Abajo, Izquierda, Derecha).
+### Mover el fantasma actual: Usa las teclas [I], [K], [J], [L] (Arriba, Abajo, Izquierda, Derecha).
 
-Colocar muro de fantasmas: Haz Click Izquierdo entre dos casillas (consume "muros fantasma").
+### Colocar muro de fantasmas: Haz Click Izquierdo entre dos casillas (consume "muros fantasma").
 
 <img width="789" height="622" alt="Captura de pantalla 2026-06-23 a la(s) 16 31 24" src="https://github.com/user-attachments/assets/43b0fd3e-ecfe-43f6-b9c3-c999a8c702bd" />
 
