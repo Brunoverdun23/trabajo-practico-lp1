@@ -2,7 +2,7 @@
 
 // agustin si ves y si queres comenza primero vos la parte grafica aca o osino abajo del mio
 como quieras y cuando termines borra este comentario <3
-
+hgghhhh
 ## Mecanicas del juego
 
 ### 1. Sistema de Turnos y Puntos de Acción
