@@ -1,7 +1,42 @@
 # Presentacion De Bruno Verdun y Agustin Benavente
+## El Bucle de juego 
+Para manejar el apartado grafico utilizamos la libreria indicada, raylib, que nos permite dibujar formas, mostrar imagenes y leer el teclado, funciona imprimiendo en la pantalla una serie de pixeles determinados por el codigo que terminan formando una imagen estatica llamada fotograma, por cada pequeña varaciacion borra el fotograma previo y genera otro, la rapida sucesion de estos fotgramas en un tiempo determinado permite crear la ilusion de movimiento.
 
-// agustin si ves y si queres comenza primero vos la parte grafica aca o osino abajo del mio
-como quieras y cuando termines borra este comentario <3
+Lo primero que debemos hacer es establecer cuantos fotogramas queremos que pasen en un segundo (framerate), para este juego usamos un framerate comun en los programas modernos de 60 fps, luego creamos el bucle principal del programa while (!WindowShouldClose())) hace que el bucle que crea cada fotograma se repita hasta que la ventana del programa se cierre, cada vuelta del bucle consta de tres fases:
+```c
+SetTargetFPS(60);
+
+while (!WindowShouldClose()) {
+```
+1. Input: Revisa si presionaste alguna tecla o moviste el mouse.
+2. Actualizacion: Hace los calculos correspondientes, modifica variables suma numeros etc.
+3. Dibujado: Ejecuta todas las funciones visuales para plasmar los nuevos datos.
+
+## Dibujado 
+
+### 1. Preparacion del Fotograma 
+```c
+BeginDrawing();
+    ClearBackground(GetColor(0x050510FF));
+```
+Comenzamos el ciclo abriendo el buffer de memoria grafica y borrando todo el fotograma anterior con un fondo de color azul oscuro 
+
+### 2. Dibujar el menu principal 
+```c
+int btnY = 90 + i * 40;
+ if (p.estado_juego == 0) {
+    DrawText("CONFIGURACIÓN DE PARTIDA", 150, 40, 32, YELLOW);
+    DrawText("[Izquierda/Derecha] Cambiar valor  -  [ENTER] Aceptar", 180, 560, 15, LIGHTGRAY);
+
+    for (int i = 0; i < 11; i++) {
+    .....
+```
+Cuando el estado_juego sea igual a 0 signfica que estamos en el menu principal, con drawtext dibujamos en la pantalla los textos fijos del menu y el bucle nos permite crear cada una de las opciones de manera mas eficiente, dicho bucle recorre un arreglo de opciones y, en cada fotograma, consulta el valor de las variables de configuración y la posición del cursor (menu_sel), en caso de ser la opcion elegida se le dibuja una caja oscura y se cambia el color del texto a uno especifico, btnY permite espaciar las opciones de una manera sencilla y simetrica. 
+```c
+if (menu_sel == i) DrawRectangle(120, btnY, 560, 35, GetColor(0x11112CFF));
+
+    if (i == 0) DrawText(TextFormat("Modo de Juego: %s", cfg_pvp ? "Player vs Player" : "IA vs Player"), 150, btnY + 10, 20, (menu_sel == i) ? WHITE : GRAY);
+```
 
 ## Mecanicas del juego
 
