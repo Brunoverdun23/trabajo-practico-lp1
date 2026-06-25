@@ -35,15 +35,34 @@ typedef struct {
 
 ```c
 if (p.pacman.acciones > 0) {
-    // Turno del Jugador 1
-    if (IsKeyPressed(KEY_UP)) MoverPacMan(&p, 0);
-} 
-else {
-    // Control de enemigos
-    if (!p.es_pvp) {
-        if (IsKeyPressed(KEY_SPACE)) MoverFantasmas(&p); 
+    
+    // --- TURNO DE PAC-MAN ---
+    if (p.modo_juego == 0) {
+        // Modo Movimiento
+        if (IsKeyPressed(KEY_UP))    MoverPacMan(&p, 0);
+        if (IsKeyPressed(KEY_DOWN))  MoverPacMan(&p, 1);
+        if (IsKeyPressed(KEY_LEFT))  MoverPacMan(&p, 2);
+        if (IsKeyPressed(KEY_RIGHT)) MoverPacMan(&p, 3);
+    } else {
+        // Modo Construcción (Muros)
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && p.muros_mano_pacman > 0) {
+            // Lógica para detectar coordenadas del mouse y AgregarMuro()
+        }
     }
-}
+    
+} else {
+    
+    // --- TURNO DE LOS FANTASMAS ---
+    // (Entra aquí automáticamente cuando las acciones de Pac-Man llegan a 0)
+    
+    if (!p.es_pvp) {
+        // MODO IA: El turno avanza paso a paso al presionar espacio
+        if (IsKeyPressed(KEY_SPACE)) MoverFantasmas(&p); 
+    } else {
+        // MODO PvP: El jugador 2 controla con teclado o mouse
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && p.muros_mano_fantasmas > 0) {
+            // Lógica del Jugador 2 para colocar muros
+        }
 ```
 
 
