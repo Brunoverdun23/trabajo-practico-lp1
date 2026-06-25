@@ -38,6 +38,86 @@ if (menu_sel == i) DrawRectangle(120, btnY, 560, 35, GetColor(0x11112CFF));
     if (i == 0) DrawText(TextFormat("Modo de Juego: %s", cfg_pvp ? "Player vs Player" : "IA vs Player"), 150, btnY + 10, 20, (menu_sel == i) ? WHITE : GRAY);
 ```
 
+### 3. El Motor del tablero 
+
+Utilizamos el Algoritmo del Pintor, que consiste en dibujar la escena en capas, desde el fondo hacia adelante, para que los elementos se superpongan correctamente.
+
+### 3.1 Grilla y Pac-bolas
+```c
+ for (int i = 0; i < p.filas; i++) {
+
+                    for (int j = 0; j < p.cols; j++) {
+                        if (p.grilla[i][j] == 2) DrawCircle(offsetX + j * cellSize + cellSize/2, offsetY + i * cellSize + cellSize/2, cellSize*0.12f, GOLD);
+                    }
+                }
+
+                for (int i = 0; i < p.filas; i++) {
+                    for (int j = 0; j < p.cols; j++) DrawRectangleLines(offsetX + j * cellSize, offsetY + i * cellSize, cellSize, cellSize, DARKGRAY);
+                }
+```
+Con el primer bucle recorremos la matriz p.grilla. En este bucle, si detectamos un valor 2, dibujamos una pac-bola. El secreto aquí es la matemática de posicionamiento: calculamos el centro de cada celda sumando el offset (margen) más la mitad del tamaño de la celda (cellSize/2). Esto garantiza que los objetos siempre queden perfectamente centrado, mientras que con el segundo creamos el de dibujo de cuadricula del mapa creando el contorno Lines de cada celda.
+
+### 3.2 Logica de Muros 
+```c
+for (int i = 0; i < p.cant_muros; i++) {
+    float x1 = offsetX + p.muros[i].c1.c * cellSize, y1 = offsetY + p.muros[i].c1.f * cellSize;
+    float x2 = offsetX + p.muros[i].c2.c * cellSize, y2 = offsetY + p.muros[i].c2.f * cellSize;
+    Color colorMuro = (p.muros[i].propietario == -1) ? BLUE : ORANGE; 
+
+    if (p.muros[i].c1.f != p.muros[i].c2.f) {
+        float yLinea = (y1 > y2) ? y1 : y2;
+            DrawLineEx((Vector2){x1, yLinea}, (Vector2){x1 + cellSize, yLinea}, 8, colorMuro);
+            } else {
+                float xLinea = (x1 > x2) ? x1 : x2;
+                DrawLineEx((Vector2){xLinea, y1}, (Vector2){xLinea, y1 + cellSize}, 8, colorMuro);
+            }
+}
+```
+El sistema de muros utiliza una lógica de orientación absoluta. Se almacena los muros mediante dos puntos extremos. En el renderizado, analizamos la diferencia entre las coordenadas (f, c) de ambos puntos para determinar su orientación. Por lo cual la orientacion se deriva directamente de la geometría del muro en la matriz.
+
+### 3.3 Entidades y animacion 
+```c
+DrawCircle(offsetX + p.pacman.pos.c * cellSize + cellSize/2, offsetY + p.pacman.pos.f * cellSize + cellSize/2, cellSize*0.3f, YELLOW);
+
+for (int i = 0; i < 4; i++) {
+                    if (p.fantasmas[i].activo && p.fantasmas[i].habilitado) {
+                        float fx = offsetX + p.fantasmas[i].pos.c * cellSize + cellSize/2;
+                        float fy = offsetY + p.fantasmas[i].pos.f * cellSize + cellSize/2;
+                        ........
+```
+Dibujamos a pac-man y a cada uno de los fantasmas que esten habilitados y que todavia no hayan sido comidos por pac-man y los dinujan en el centro de sus respectivas casillas.
+```c
+Color colorActual;
+    if (p.estado_juego == 1 && p.cazando) {
+        colorActual = (((int)(GetTime() * 4) % 2) == 0) ? BLUE : SKYBLUE;
+        } else {
+        colorActual = p.fantasmas[i].color;
+        }
+                        
+    if (p.estado_juego == 1 && p.es_pvp && p.pacman.acciones == 0 && p.fantasma_actual_idx == i) {
+        if (((int)(GetTime() * 5) % 2) == 0) DrawCircle(fx, fy - cellSize*0.06f, cellSize*0.3f, WHITE);
+    }
+
+    DrawCircle(fx, fy - cellSize*0.06f, cellSize*0.23f, colorActual);
+    DrawRectangle(fx - cellSize*0.23f, fy - cellSize*0.06f, cellSize*0.46f, cellSize*0.3f, colorActual);
+                        
+    if (p.estado_juego == 1 && p.cazando) {
+            DrawCircle(fx - cellSize*0.1f, fy - cellSize*0.03f, cellSize*0.05f, WHITE);
+            DrawCircle(fx + cellSize*0.1f, fy - cellSize*0.03f, cellSize*0.05f, WHITE);
+    } else {
+        DrawCircle(fx - cellSize*0.1f, fy - cellSize*0.06f, cellSize*0.06f, WHITE);
+        DrawCircle(fx + cellSize*0.1f, fy - cellSize*0.06f, cellSize*0.06f, WHITE);
+        DrawCircle(fx - cellSize*0.1f, fy - cellSize*0.06f, cellSize*0.03f, BLACK);
+        DrawCircle(fx + cellSize*0.1f, fy - cellSize*0.06f, cellSize*0.03f, BLACK);
+    }
+```
+El renderizado de los fantasmas funciona mediante un sistema de composición geométrica. En lugar de cargar archivos de imagen, construimos cada fantasma como un objeto compuesto por círculos y rectángulos. Se utiliza la sincronizacion de estados mediante GetTime() para causar cambios visuales en tiempo real, como el parpadeo en el modo 'cazando' o el indicador de seleccion en PvP. Esto permite al usuario identificar el estado lógico del juego (quién es vulnerable, de quién es el turno) simplemente mirando la pantalla, sin necesidad de consultar el HUD lateral.
+
+## 4. La Interfaz Lateral 
+
+## 5. Pantallas de Fin de Partida 
+
+
 ## Mecanicas del juego
 
 ### 1. Sistema de Turnos y Puntos de Acción
@@ -71,6 +151,7 @@ else {
     }
 }
 ```
+
 
 ### 1.3. La Economía Dinámica
 
