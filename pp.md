@@ -1,5 +1,5 @@
 # Presentacion De Bruno Verdun y Agustin Benavente
-## El Bucle de juego 
+## El Bucle del programa 
 Para manejar el apartado grafico utilizamos la libreria indicada, raylib, que nos permite dibujar formas, mostrar imagenes y leer el teclado, funciona imprimiendo en la pantalla una serie de pixeles determinados por el codigo que terminan formando una imagen estatica llamada fotograma, por cada pequeña varaciacion borra el fotograma previo y genera otro, la rapida sucesion de estos fotgramas en un tiempo determinado permite crear la ilusion de movimiento.
 
 Lo primero que debemos hacer es establecer cuantos fotogramas queremos que pasen en un segundo (framerate), para este juego usamos un framerate comun en los programas modernos de 60 fps, luego creamos el bucle principal del programa while (!WindowShouldClose())) hace que el bucle que crea cada fotograma se repita hasta que la ventana del programa se cierre, cada vuelta del bucle consta de tres fases:
