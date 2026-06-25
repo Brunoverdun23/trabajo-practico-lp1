@@ -201,6 +201,30 @@ while(head < tail) {
 }
 free(queue); // Prevención estricta de fugas de memoria (Memory Leaks)
 ```
+### 3.4. Ejecución Táctica (Caza vs Huida)
+Con el mapa de calor de distancias generado, el fantasma evalúa sus propios vecinos inmediatos. La decisión final depende de la bandera global cazando, la cual invierte por completo el objetivo de la búsqueda.
 
-
+```c
+if (p->cazando) {
+    // Modo Huida: El fantasma busca la casilla adyacente con la distancia MÁXIMA a Pac-Man
+    int max_dist = -1;
+    for (int d = 0; d < 4; d++) {
+        // ... (Validación de casilla) ...
+        if (d_pac != -1 && d_pac > max_dist) {
+            max_dist = d_pac;
+            mejor_destino = vec;
+        }
+    }
+} else {
+    // Modo Cacería: El fantasma busca la casilla adyacente con la distancia MÍNIMA a Pac-Man
+    int min_dist = 9999;
+    for (int d = 0; d < 4; d++) {
+        // ... (Validación de casilla) ...
+        if (d_pac != -1 && d_pac < min_dist) {
+            min_dist = d_pac;
+            mejor_destino = vec;
+        }
+    }
+}
+```
 
