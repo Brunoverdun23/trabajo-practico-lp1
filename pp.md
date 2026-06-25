@@ -114,9 +114,118 @@ Color colorActual;
 El renderizado de los fantasmas funciona mediante un sistema de composición geométrica. En lugar de cargar archivos de imagen, construimos cada fantasma como un objeto compuesto por círculos y rectángulos. Se utiliza la sincronizacion de estados mediante GetTime() para causar cambios visuales en tiempo real, como el parpadeo en el modo 'cazando' o el indicador de seleccion en PvP. Esto permite al usuario identificar el estado lógico del juego (quién es vulnerable, de quién es el turno) simplemente mirando la pantalla, sin necesidad de consultar el HUD lateral.
 
 ## 4. La Interfaz Lateral 
+```c
+ DrawLineEx((Vector2){545, 0}, (Vector2){545, 600}, 3, BLUE);
+DrawRectangle(548, 0, 252, 600, BLACK);
 
+if (p.estado_juego == 1) {
+    DrawText("QUORIDOR", 565, 20, 24, BLUE);
+    DrawText("PAC-MAN", 565, 45, 24, YELLOW);
+```
+Primero creamos los graficos estaticos de la interfaz, la linea divisora azul y el rectangulo negro del fondo ademas de los textos QUORIDOR y PAC-MAN.
+
+### 4.1 Monitoreo de Datos en Tiempo Real
+```c
+if (p.estado_juego == 1) {
+                    DrawText("QUORIDOR", 565, 20, 24, BLUE);
+                    DrawText("PAC-MAN", 565, 45, 24, YELLOW);
+                    
+                    DrawText(p.es_pvp ? "MODO: PVP LOCAL" : "MODO: VS COMPUTADORA", 565, 75, 13, SKYBLUE);
+                    DrawLine(565, 95, 765, 95, DARKGRAY);
+
+                    DrawText(TextFormat("ACCIONES: %d", p.pacman.acciones), 565, 115, 20, WHITE);
+                    DrawText(TextFormat("VIDAS: %d", p.pacman.vidas), 565, 145, 20, p.pacman.vidas > 1 ? GREEN : RED);
+                    DrawText(TextFormat("BOLITAS: %d / 4", p.bolitas_restantes), 565, 175, 20, GOLD);
+                    DrawText(TextFormat("Muros P-M: %d", p.muros_mano_pacman), 565, 205, 16, ORANGE);
+                    DrawText(TextFormat("Muros Fant: %d", p.muros_mano_fantasmas), 565, 225, 16, RED);
+
+                    if (p.cazando) {
+                        DrawText("¡CAZA ACTIVA!", 565, 250, 18, SKYBLUE);
+                    }
+```
+Transforma las variables logicas internas del juego en texto dinamico para el jugador utilizando TextFormat(TextFormat es una funcion de raylibb que permite combinar texto estatico con variables dinamicas ya que las funciones de dibujado de raylib no permiten combinar enteros con caracteres), cambia dinamicamente el color de Vidas a rojo cuando solo queda una y avisa al jugador de la inversion de roles e inicio del modo caza cuando Pac-man come una pac-bola.
+
+### 4.2 Maquina de Estados de Turnos 
+```c
+DrawLine(565, 275, 765, 275, DARKGRAY);
+DrawText("TURNO ACTUAL:", 565, 290, 15, LIGHTGRAY);
+                    
+if (p.pacman.acciones > 0) {
+    if (p.modo_juego == 0) DrawText("MOVER PACMAN", 565, 310, 20, YELLOW);
+        else DrawText("COLOCAR MURO", 565, 310, 20, ORANGE);
+        DrawText("[TAB] Cambiar Modo", 565, 335, 14, GRAY);
+        } else {
+            if (!p.es_pvp) {
+                DrawRectangle(558, 305, 230, 70, MAROON);
+                DrawRectangleLines(558, 305, 230, 70, RED);
+                DrawText("TURNO IA", 573, 315, 16, WHITE);
+                DrawText("[ESPACIO] Avanzar", 573, 342, 14, YELLOW);
+                } else {
+                    DrawRectangle(558, 305, 230, 110, GetColor(0x152535FF));
+                    DrawRectangleLines(558, 305, 230, 110, SKYBLUE);      
+                    int actIdx = p.fantasma_actual_idx;
+                    Color cF = p.fantasmas[actIdx].activo ? p.fantasmas[actIdx].color : GRAY;  
+                    DrawText("JUGADOR 2 (FANTASMAS)", 568, 315, 13, SKYBLUE);
+                    DrawText(TextFormat("Moviendo índice: %d", actIdx), 568, 335, 13, cF);
+                    DrawText("Teclas: [ I, J, K, L ] o Muro", 562, 365, 11, LIGHTGRAY);
+                    }
+                }
+```
+Este bloque implementa la lógica de renderizado condicional para la gestión de turnos. Funciona como una estructura anidada que actúa según el estado de los datos. El primer nivel evalúa las acciones restantes de Pac-Man para separar el turno del atacante del turno de los defensores.
+
+En el segundo nivel, el HUD altera por completo su layout gráfico: si la partida es contra la Inteligencia Artificial, dibuja un contenedor de alerta para sincronizar el procesamiento del algoritmo de búsqueda; si la partida es PvP, renderiza un contenedor informativo para el Jugador 2 que mapea dinámicamente el color del fantasma seleccionado mediante operaciones condicionales y le explicita su esquema de entrada por teclado
+
+## 5. Editor de Mapas 
+```c
+else if (p.estado_juego == 4) {
+                    DrawText("MODO EDITOR", 565, 30, 24, PURPLE);
+                    DrawLine(565, 75, 765, 75, DARKGRAY);
+                    DrawText("HERRAMIENTAS:", 565, 95, 16, LIGHTGRAY);
+                    DrawText("[1] PAC-MAN", 565, 130, 16, (herramienta == 0) ? YELLOW : GRAY);
+                    DrawText("[2] FANTASMAS", 565, 170, 16, (herramienta == 1) ? RED : GRAY);
+                    DrawText("[3] PAC-BOLAS", 565, 210, 16, (herramienta == 2) ? GOLD : GRAY);
+                    DrawText("[4] MUROS FIJOS", 565, 250, 16, (herramienta == 3) ? RED : GRAY);
+                    DrawLine(565, 300, 765, 300, DARKGRAY);
+                    DrawText("CONTROLES:", 565, 320, 16, LIGHTGRAY);
+                    DrawText("Click Izq: Editar", 565, 350, 15, WHITE);
+                    DrawText("[FLECHAS] Tamaño Mapa", 565, 380, 15, SKYBLUE);
+                    DrawText("[ENTER] GUARDAR", 575, 450, 16, GREEN);
+                    DrawText("[M] VOLVER AL MENÚ", 575, 480, 15, GRAY);
+                }
+```
+Dibuja todas las opciones e informacion del editor de mapas ademas de una ayuda visual para que el jugador sepa que opcion tiene seleccionada.
 ## 5. Pantallas de Fin de Partida 
+```c
+if (p.estado_juego == 2 || p.estado_juego == 3) { 
+                    DrawRectangle(0, 0, 800, 600, Fade(BLACK, 0.88f));
+                    
+                    int comidas = 4 - p.bolitas_restantes;
+                    const char* nivelTexto = "Pac-Man Principiante";
+                    Color nivelColor = GRAY;
 
+                    if (comidas == 1) { nivelTexto = "Pac-Man novato"; nivelColor = GREEN; }
+                    else if (comidas == 2) { nivelTexto = "Pac-Man prometedor"; nivelColor = LIME; }
+                    else if (comidas == 3) { nivelTexto = "Pac-Man de categoría"; nivelColor = ORANGE; }
+                    else if (comidas == 4) { nivelTexto = "Pac-Man de élite"; nivelColor = GOLD; }
+
+                    if (p.estado_juego == 2) { 
+                        DrawText("¡VICTORIA!", 280, 160, 42, GREEN);
+                        DrawText("¡Conseguiste el objetivo perfecto!", 220, 220, 20, WHITE);
+                    } else { 
+                        DrawText("GAME OVER", 285, 160, 42, RED);
+                        DrawText("Los fantasmas te acorralaron...", 240, 220, 20, WHITE);
+                    }
+
+                    DrawText(TextFormat("Pac-bolas devoradas: %d / 4", comidas), 260, 280, 20, GOLD);
+                    DrawText("Nivel Alcanzado:", 300, 330, 20, LIGHTGRAY);
+                    DrawText(nivelTexto, 400 - (MeasureText(nivelTexto, 26) / 2), 370, 26, nivelColor);
+                    DrawText("Presiona 'R' para regresar al Menú Principal", 185, 470, 18, GRAY);
+                }
+            }
+
+        EndDrawing();
+```
+Se utiliza la funcion Fade para superponer un rectangulo negro con una opacidad del 88% para dar un efecto de oscurecimiento al activarse la pantalla de fin de partida, luego a nivel logico se procesan los resultados obtenidos en la partida guardados en las variables correspondientes para determinar un nivel de exito o fracaso, los textos y colores dibujados estan basados en ese nivel de exito, finalmente se implemente un algoritmo de centrado utilizando MeasureText que calcula dinamicamente el ancho del rango de pixeles obtenidos para ubicarse en ele centro.
 
 ## Mecanicas del juego
 
