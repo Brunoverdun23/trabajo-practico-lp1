@@ -388,7 +388,7 @@ if (p.estado_juego == 1) {
                     }
 ```
 Transforma las variables logicas internas del juego en texto dinamico para el jugador utilizando TextFormat(TextFormat es una funcion de raylibb que permite combinar texto estatico con variables dinamicas ya que las funciones de dibujado de raylib no permiten combinar enteros con caracteres), cambia dinamicamente el color de Vidas a rojo cuando solo queda una y avisa al jugador de la inversion de roles e inicio del modo caza cuando Pac-man come una pac-bola.
-
+(Averiguar que son los numeros en cada dratext y porque son estaticos )
 ### 4.2 Maquina de Estados de Turnos 
 ```c
 DrawLine(565, 275, 765, 275, DARKGRAY);
