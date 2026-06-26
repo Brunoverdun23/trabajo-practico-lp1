@@ -2,7 +2,8 @@
 
 ## Introduccion: logica.c , logica.h y main.c
 
-(Poner una imagen?)
+<img width="109" height="76" alt="Captura de pantalla 2026-06-26 a la(s) 09 20 56" src="https://github.com/user-attachments/assets/7818aa2e-bca9-4e03-987a-9b3115f45b0d" />
+)
 
 ## El Bucle del programa 
 Para manejar el apartado gráfico utilizamos la librería indicada, raylib, que nos permite dibujar formas, mostrar imágenes y leer el teclado, funciona imprimiendo en la pantalla una serie de pixeles determinados por el código que terminan formando una imagen estática llamada fotograma, por cada pequeña variación borra el fotograma previo y genera otro, la rápida sucesión de estos fotogramas en un tiempo determinado permite crear la ilusión de movimiento.
