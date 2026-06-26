@@ -1,12 +1,15 @@
 # Presentacion De Bruno Verdun y Agustin Benavente
 
 ## Introduccion, logica.c , logica.h, main.c
+```c
+<img width="709" height="187" alt="Captura de pantalla 2026-06-26 000906" src="https://github.com/user-attachments/assets/95afcc7e-4937-4d71-b52b-a680fcd47af0" />
 
+```
 ## El Bucle del programa 
 Para manejar el apartado gráfico utilizamos la librería indicada, raylib, que nos permite dibujar formas, mostrar imágenes y leer el teclado, funciona imprimiendo en la pantalla una serie de pixeles determinados por el código que terminan formando una imagen estática llamada fotograma, por cada pequeña variación borra el fotograma previo y genera otro, la rápida sucesión de estos fotogramas en un tiempo determinado permite crear la ilusión de movimiento.
 
 ```c
-SetTargetFPS(60);
+SetTargetFPS(60)
 
 while (!WindowShouldClose()) {
 ```
