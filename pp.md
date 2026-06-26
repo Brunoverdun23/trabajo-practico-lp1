@@ -267,9 +267,139 @@ if (p->cazando) {
     }
 }
 ```
-## Editor
- ACA te dejo el espacio para que pongas todo lo otro y abajo de la raya yo pongo lo del guardado
- ___________________________________
+## Funcionamiento del edito de mapas 
+```c
+   else if (p.estado_juego == 4) {
+            if (IsKeyPressed(KEY_ONE))   herramienta = 0;
+            if (IsKeyPressed(KEY_TWO))   herramienta = 1;
+            if (IsKeyPressed(KEY_THREE)) herramienta = 2;
+            if (IsKeyPressed(KEY_FOUR))  herramienta = 3;
+```
+En el inicio del if statemente el codigo pregunta si se presiono alguna de las teclas de las opciones y en caso de ser asi se asgina el valor de la tecla a la variable herramienta 
+```c
+if (IsKeyPressed(KEY_UP) && p.filas > 5) {
+                int n_f = p.filas - 1; int n_c = p.cols - 1;
+                int **n_g = malloc(n_f * sizeof(int *));
+                for(int i = 0; i < n_f; i++) {
+                    n_g[i] = malloc(n_c * sizeof(int));
+                    for(int j = 0; j < n_c; j++) n_g[i][j] = p.grilla[i][j];
+                }
+                for(int i = 0; i < p.filas; i++) free(p.grilla[i]);
+                free(p.grilla);
+                p.grilla = n_g; p.filas = n_f; p.cols = n_c;
+            }
+            if (IsKeyPressed(KEY_DOWN) && p.filas < 15) {
+                int n_f = p.filas + 1; int n_c = p.cols + 1;
+                int **n_g = malloc(n_f * sizeof(int *));
+                for(int i = 0; i < n_f; i++) {
+                    n_g[i] = malloc(n_c * sizeof(int));
+                    for(int j = 0; j < n_c; j++) {
+                        if (i < p.filas && j < p.cols) n_g[i][j] = p.grilla[i][j];
+                        else n_g[i][j] = 0;
+                    }
+                }
+                for(int i = 0; i < p.filas; i++) free(p.grilla[i]);
+                free(p.grilla);
+                p.grilla = n_g; p.filas = n_f; p.cols = n_c;
+            }
+```
+Si se presiona la tecla de subir y hay mas de 5 filas se elimina la ultima fila y la ultima columna, en contraparte si se presiona la tecla de bajar y hay menos de 15 filas se le añade al tablero una fila y una columa extra ambas vacias
+```c
+if (IsKeyPressed(KEY_M)) {
+                LiberarPartida(&p);
+                p.estado_juego = 0; 
+            }
+            
+            if (IsKeyPressed(KEY_ENTER)) {
+                p.bolitas_restantes = 0;
+                for(int i = 0; i < p.filas; i++) {
+                    for(int j = 0; j < p.cols; j++) {
+                        if (p.grilla[i][j] == 2) p.bolitas_restantes++;
+                    }
+                }
+               if (p.bolitas_restantes == 4) {
+                    MapaGuardado n_map;
+                    memset(&n_map, 0, sizeof(MapaGuardado)); // LIMPIEZA VITAL DE MEMORIA
+                    n_map.filas = p.filas;
+                    n_map.cols = p.cols;
+                    n_map.pos_pacman = p.pacman.pos;
+                    for(int g=0; g<4; g++) n_map.pos_fantasmas[g] = p.fantasmas[g].pos;
+                    for(int i=0; i<p.filas; i++) {
+                        for(int j=0; j<p.cols; j++) n_map.grilla[i][j] = p.grilla[i][j];
+                    }
+                    n_map.cant_muros = (p.cant_muros <= MAX_MUROS_MAPA) ? p.cant_muros : MAX_MUROS_MAPA;
+                    for(int i=0; i<n_map.cant_muros; i++) n_map.muros[i] = p.muros[i];
+
+                    GuardarMapaPersonalizado("mapa_user.dat", &n_map);
+                    LiberarPartida(&p);
+                    p.estado_juego = 0; 
+                }
+                }
+            }
+```
+Si se presiona m se sale del editor de mapas sin guardar y se vuelve al menu principal. Por otro lado si se presiona enter se crea una variable de tipo MapaGuardado llamada n_map a la que se guarda toda la informacion del tablero y se envia a la funcion GuardarMapaPersonalizado.
+```c
+if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+                Vector2 mousePos = GetMousePosition();
+                float cx = mousePos.x - offsetX;
+                float cy = mousePos.y - offsetY;
+
+                if (cx >= 0 && cy >= 0 && cx <= p.cols * cellSize && cy <= p.filas * cellSize) {
+                    int col = (int)(cx / cellSize);
+                    int fila = (int)(cy / cellSize);
+```
+si se da click con el mouse se guarda el valor logico de la posicion del click y despues se determina a que casilla del tablero corresponde.
+```c
+if (herramienta == 0) p.pacman.pos = (Posicion){fila, col}; 
+                    else if (herramienta == 1) {
+                        p.fantasmas[ghost_editar_idx].pos = (Posicion){fila, col}; 
+                        ghost_editar_idx = (ghost_editar_idx + 1) % 4; 
+                    } 
+                    else if (herramienta == 2) p.grilla[fila][col] = (p.grilla[fila][col] == 2) ? 0 : 2;
+```
+Se utiliza la variable herramienta para determinar si se pone un fantasma en esa posicion, una pac-bola o a pac-man.
+```c
+else if (herramienta == 3) {
+                        int localX = (int)cx % (int)cellSize;
+                        int localY = (int)cy % (int)cellSize;
+                        Posicion pos1 = {fila, col};
+                        Posicion pos2;
+                        bool valido = true;
+                        
+                        int margen = (int)(cellSize * 0.25f);
+                        int margen_sup = (int)(cellSize * 0.75f);
+```
+Para colocar muros primero determinamos la posición exacta en pixeles del click dentro de la celda, luego hacemos que la primera celda del muro sea la que se dio el click y declaramos la segunda y se determinan los bordes izquierdos y derecho de la celda
+```c
+if (localX < margen) pos2 = (Posicion){fila, col - 1};      
+                        else if (localX > margen_sup) pos2 = (Posicion){fila, col + 1}; 
+                        else if (localY < margen) pos2 = (Posicion){fila - 1, col}; 
+                        else if (localY > margen_sup) pos2 = (Posicion){fila + 1, col}; 
+                        else valido = false;
+```
+Se determina que esquina de la celda se toco para poner el muro ahi y si se toco el centro no se pone nada
+```c
+if (valido && pos2.f >= 0 && pos2.f < p.filas && pos2.c >= 0 && pos2.c < p.cols) {
+                            int indice_encontrado = -1;
+                            for (int i = 0; i < p.cant_muros; i++) {
+                                bool c1 = (p.muros[i].c1.f == pos1.f && p.muros[i].c1.c == pos1.c && p.muros[i].c2.f == pos2.f && p.muros[i].c2.c == pos2.c);
+                                bool c2 = (p.muros[i].c1.f == pos2.f && p.muros[i].c1.c == pos2.c && p.muros[i].c2.f == pos1.f && p.muros[i].c2.c == pos1.c);
+                                if (c1 || c2) { indice_encontrado = i; break; }
+                            }
+
+                            if (indice_encontrado != -1) {
+                                for (int i = indice_encontrado; i < p.cant_muros - 1; i++) p.muros[i] = p.muros[i + 1];
+                                p.cant_muros--;
+                                if (p.cant_muros > 0) {
+                                    Muro *temp = (Muro *)realloc(p.muros, p.cant_muros * sizeof(Muro));
+                                    if (temp != NULL) p.muros = temp;
+                                } else { free(p.muros); p.muros = NULL; }
+                            } else {
+                                AgregarMuro(&p, pos1, pos2, -1, -1);
+                            }
+                        }
+```
+Por ultimo se determina si en esa posicion ya  habia un muro antes o no, si ya habia un muro antes lo que hace es borrarlo y si no lo habia lo pone
 
 ### Como guardamos el mapa
 ```c
@@ -282,9 +412,9 @@ bool GuardarMapaPersonalizado(const char *nombreArchivo, MapaGuardado *mapa) {
     return true;
 }
 ```
-Entonces Nosotros Usamos binario porque nos permite hacer un "volcado de memoria" (memory dump) instantáneo, copiando la estructura de tu mapa exactamente como existe en la RAM y sin perder usando bucles for ni nada, sin perder tiempo traduciéndola a letras y números legibles.utilizamos fwrite para agarrar la fotografia que sacamos.
+Entonces nosotros Usamos binario porque nos permite hacer un "volcado de memoria" (memory dump) instantáneo, copiando la estructura de tu mapa exactamente como existe en la RAM y sin perder usando bucles for ni nada, sin perder tiempo traduciéndola a letras y números legibles.utilizamos fwrite para agarrar la fotografia que sacamos.
 
-### como cargamos el mapa
+### Como cargamos el mapa
 
 ### Lectura Binaria (Sacando los datos del disco)
 ```c
