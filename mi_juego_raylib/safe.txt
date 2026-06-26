@@ -1,0 +1,284 @@
+#include "logica.h"
+#include <stdlib.h>
+#include <time.h>
+
+// ==========================================
+// --- FUNCIÓN AUXILIAR INTERNA (ESTÁTICA) ---
+// ==========================================
+
+static bool TieneLineaDeVision(Partida *p, Posicion fantasma) {
+    Posicion pacman = p->pacman.pos;
+    if (fantasma.f != pacman.f && fantasma.c != pacman.c) return false;
+
+    if (fantasma.f == pacman.f) {
+        int inicio = (fantasma.c < pacman.c) ? fantasma.c : pacman.c;
+        int fin = (fantasma.c < pacman.c) ? pacman.c : fantasma.c;
+        for (int col = inicio; col < fin; col++) {
+            Posicion actual = {fantasma.f, col};
+            Posicion siguiente = {fantasma.f, col + 1};
+            if (!EsMovimientoValido(p, actual, siguiente)) return false;
+        }
+    } else {
+        int inicio = (fantasma.f < pacman.f) ? fantasma.f : pacman.f;
+        int fin = (fantasma.f < pacman.f) ? pacman.f : fantasma.f;
+        for (int fila = inicio; fila < fin; fila++) {
+            Posicion actual = {fila, fantasma.c};
+            Posicion siguiente = {fila + 1, fantasma.c};
+            if (!EsMovimientoValido(p, actual, siguiente)) return false;
+        }
+    }
+    return true;
+}
+
+// ==========================================
+// --- FUNCIONES DE LA PARTIDA ---
+// ==========================================
+
+bool InicializarPartida(Partida *p, int f, int c, int dificultad) {
+    srand(time(NULL));
+    p->modo_juego = 0;
+    p->estado_juego = 1;
+    p->dificultad = dificultad;
+    p->turnos_vulnerables = 0;
+    p->filas = f;
+    p->cols = c;
+    p->cant_muros = 0;
+    p->muros = NULL;
+
+    p->grilla = malloc(f * sizeof(int *));
+    for(int i = 0; i < f; i++) {
+        p->grilla[i] = malloc(c * sizeof(int));
+        for(int j = 0; j < c; j++) p->grilla[i][j] = 0;
+    }
+    // Configuración inicial de Pac-Man
+    p->pacman.pos = (Posicion){0, 0};
+    p->pacman.vidas = 1;
+    p->pacman.acciones = 2;
+
+    p->bolitas_restantes = 0;
+    while (p->bolitas_restantes < 4) {
+        int rf = GetRandomValue(0, f - 1);
+        int rc = GetRandomValue(0, c - 1);
+        if (p->grilla[rf][rc] == 0 && (rf + rc) >= 6) {
+            p->grilla[rf][rc] = 2;
+            p->bolitas_restantes++;
+        }
+    }
+
+    Color colores[4] = {RED, PINK, ORANGE, BLUE};
+    for(int i = 0; i < 4; i++) {
+        p->fantasmas[i].pos = (Posicion){GetRandomValue(f/2, f-1), GetRandomValue(c/2, c-1)};
+        p->fantasmas[i].color = colores[i];
+        p->fantasmas[i].activo = true;
+    }
+
+    for(int i = 0; i < 5; i++) {
+        Posicion p1 = {GetRandomValue(0, f-1), GetRandomValue(0, c-1)};
+        Posicion p2 = {p1.f, (p1.c + 1 < c) ? p1.c + 1 : p1.c - 1};
+        AgregarMuro(p, p1, p2, -1);
+    }
+    return true;
+}
+
+bool EsMovimientoValido(Partida *p, Posicion origen, Posicion destino) {
+    if (destino.f < 0 || destino.f >= p->filas || destino.c < 0 || destino.c >= p->cols) return false;
+    for (int i = 0; i < p->cant_muros; i++) {
+        bool cruza_de_c1_a_c2 = (origen.f == p->muros[i].c1.f && origen.c == p->muros[i].c1.c) &&
+        (destino.f == p->muros[i].c2.f && destino.c == p->muros[i].c2.c);
+        bool cruza_de_c2_a_c1 = (origen.f == p->muros[i].c2.f && origen.c == p->muros[i].c2.c) &&
+        (destino.f == p->muros[i].c2.f && destino.c == p->muros[i].c2.c);
+        if (cruza_de_c1_a_c2 || cruza_de_c2_a_c1) return false;
+    }
+    return true;
+}
+
+bool MoverPacMan(Partida *p, int dir) {
+    if (p->pacman.acciones <= 0 || p->estado_juego != 1) return false;
+
+    Posicion destino = p->pacman.pos;
+    if (dir == 0) destino.f--;
+    else if (dir == 1) destino.f++;
+    else if (dir == 2) destino.c--;
+    else if (dir == 3) destino.c++;
+
+    if (EsMovimientoValido(p, p->pacman.pos, destino)) {
+        p->pacman.pos = destino;
+        p->pacman.acciones--; 
+        if (p->grilla[destino.f][destino.c] == 2) {
+            p->grilla[destino.f][destino.c] = 0;
+            p->bolitas_restantes--;
+            p->turnos_vulnerables = 2; 
+            p->pacman.acciones++; 
+            if (p->bolitas_restantes <= 0) {
+                p->estado_juego = 2;
+                return true;
+            }
+        }
+        for(int i = 0; i < 4; i++) {
+            if (p->fantasmas[i].activo && p->fantasmas[i].pos.f == destino.f && p->fantasmas[i].pos.c == destino.c) {
+                if (p->turnos_vulnerables > 0) {
+                    p->fantasmas[i].activo = false;
+                } else {
+                    p->pacman.vidas--;
+                    if (p->pacman.vidas <= 0) p->estado_juego = 3;
+                }
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+void CalcularDistancias(Partida *p, int dist[9][9]) {
+    for(int i = 0; i < p->filas; i++) {
+        for(int j = 0; j < p->cols; j++) dist[i][j] = -1;
+    }
+    Posicion queue[81];
+    int head = 0, tail = 0;
+    Posicion inicio = p->pacman.pos;
+    dist[inicio.f][inicio.c] = 0;
+    queue[tail++] = inicio;
+    int df[] = {-1, 1, 0, 0};
+    int dc[] = {0, 0, -1, 1};
+    while(head < tail) {
+        Posicion curr = queue[head++];
+        for(int i = 0; i < 4; i++) {
+            Posicion sig = {curr.f + df[i], curr.c + dc[i]};
+            if (sig.f >= 0 && sig.f < p->filas && sig.c >= 0 && sig.c < p->cols) {
+                if (dist[sig.f][sig.c] == -1 && EsMovimientoValido(p, curr, sig)) {
+                    dist[sig.f][sig.c] = dist[curr.f][curr.c] + 1;
+                    queue[tail++] = sig;
+                }
+            }
+        }
+    }
+}
+
+void MoverFantasmas(Partida *p) {
+    if (p->estado_juego != 1) return;
+
+    // --- CORRECCIÓN: DECREMENTO AQUÍ AL INICIO PARA SINCRONIZAR ---
+    if (p->turnos_vulnerables > 0) p->turnos_vulnerables--;
+
+    int dist[9][9];
+    CalcularDistancias(p, dist);
+
+    int df[] = {-1, 1, 0, 0};
+    int dc[] = {0, 0, -1, 1};
+
+    for (int i = 0; i < 4; i++) {
+        if (!p->fantasmas[i].activo) continue;
+
+        int pasos_totales = 1;
+        if (p->turnos_vulnerables == 0 && TieneLineaDeVision(p, p->fantasmas[i].pos)) {
+            pasos_totales = 2;
+        }
+
+        for (int paso = 0; paso < pasos_totales; paso++) {
+            if (!p->fantasmas[i].activo || p->estado_juego != 1) break;
+
+            Posicion origen = p->fantasmas[i].pos;
+            bool usar_ia = false;
+
+            if (p->dificultad == 3) usar_ia = true;
+            else if (p->dificultad == 2) usar_ia = (GetRandomValue(0, 1) == 0);
+
+            Posicion mejor_destino = origen;
+            bool movido = false;
+
+            if (usar_ia) {
+                if (p->turnos_vulnerables > 0) {
+                    int max_dist = -1;
+                    for (int d = 0; d < 4; d++) {
+                        Posicion vec = {origen.f + df[d], origen.c + dc[d]};
+                        if (EsMovimientoValido(p, origen, vec)) {
+                            int d_pac = dist[vec.f][vec.c];
+                            if (d_pac != -1 && d_pac > max_dist) {
+                                max_dist = d_pac;
+                                mejor_destino = vec;
+                                movido = true;
+                            }
+                        }
+                    }
+                } else {
+                    int min_dist = 9999;
+                    for (int d = 0; d < 4; d++) {
+                        Posicion vec = {origen.f + df[d], origen.c + dc[d]};
+                        if (EsMovimientoValido(p, origen, vec)) {
+                            int d_pac = dist[vec.f][vec.c];
+                            if (d_pac != -1 && d_pac < min_dist) {
+                                min_dist = d_pac;
+                                mejor_destino = vec;
+                                movido = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!movido) {
+                Posicion validos[4];
+                int cant_validos = 0;
+                for (int d = 0; d < 4; d++) {
+                    Posicion vec = {origen.f + df[d], origen.c + dc[d]};
+                    if (EsMovimientoValido(p, origen, vec)) validos[cant_validos++] = vec;
+                }
+                if (cant_validos > 0) {
+                    mejor_destino = validos[GetRandomValue(0, cant_validos - 1)];
+                }
+            }
+
+            p->fantasmas[i].pos = mejor_destino;
+
+            if (p->fantasmas[i].pos.f == p->pacman.pos.f && p->fantasmas[i].pos.c == p->pacman.pos.c) {
+                if (p->turnos_vulnerables > 0) {
+                    p->fantasmas[i].activo = false;
+                    break;
+                } else {
+                    p->pacman.vidas--;
+                    if (p->pacman.vidas <= 0) {
+                        p->estado_juego = 3;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    int nuevos_muros = 0;
+    for (int i = 0; i < p->cant_muros; i++) {
+        if (p->muros[i].turnos_restantes > 0) p->muros[i].turnos_restantes--;
+        if (p->muros[i].turnos_restantes != 0) {
+            p->muros[nuevos_muros] = p->muros[i];
+            nuevos_muros++;
+        }
+    }
+    p->cant_muros = nuevos_muros;
+
+    if (p->cant_muros > 0) {
+        Muro *temp = (Muro *)realloc(p->muros, p->cant_muros * sizeof(Muro));
+        if (temp != NULL) p->muros = temp;
+    } else {
+        free(p->muros);
+        p->muros = NULL;
+    }
+
+    p->pacman.acciones = 2;
+}
+
+void AgregarMuro(Partida *p, Posicion c1, Posicion c2, int turnos) {
+    Muro *temp = (Muro *)realloc(p->muros, (p->cant_muros + 1) * sizeof(Muro));
+    if (temp != NULL) {
+        p->muros = temp;
+        p->muros[p->cant_muros].c1 = c1;
+        p->muros[p->cant_muros].c2 = c2;
+        p->muros[p->cant_muros].turnos_restantes = turnos;
+        p->cant_muros++;
+    }
+}
+
+void LiberarPartida(Partida *p) {
+    for(int i = 0; i < p->filas; i++) free(p->grilla[i]);
+    free(p->grilla);
+    free(p->muros);
+}

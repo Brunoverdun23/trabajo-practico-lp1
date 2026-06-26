@@ -83,10 +83,12 @@ int main() {
                         for(int j = 0; j < 9; j++) p.grilla[i][j] = 0;
                     }
                     p.pacman.pos = (Posicion){4, 4}; 
-                    Color colores[4] = {RED, PINK, ORANGE, BLUE};
+                    Color colores[4] = {RED,BLUE,PINK,ORANGE};
                     for(int i = 0; i < 4; i++) {
                         p.fantasmas[i].pos = (Posicion){0, 0}; 
                         p.fantasmas[i].color = colores[i];
+                        p.fantasmas[i].activo = true;       
+                        p.fantasmas[i].habilitado = true;   
                     }
                     herramienta = 0; ghost_editar_idx = 0;
                 }
@@ -272,7 +274,24 @@ int main() {
                         p.fantasmas[ghost_editar_idx].pos = (Posicion){fila, col}; 
                         ghost_editar_idx = (ghost_editar_idx + 1) % 4; 
                     } 
-                    else if (herramienta == 2) p.grilla[fila][col] = (p.grilla[fila][col] == 2) ? 0 : 2;
+                    else if (herramienta == 2) {
+    if (p.grilla[fila][col] == 2) {
+        p.grilla[fila][col] = 0; // Siempre permitimos borrar una pac-bola existente
+    } else {
+        // Contamos cuántas pac-bolas hay actualmente en la grilla
+        int pacbolas_actuales = 0;
+        for(int i = 0; i < p.filas; i++) {
+            for(int j = 0; j < p.cols; j++) {
+                if (p.grilla[i][j] == 2) pacbolas_actuales++;
+            }
+        }
+        
+        // Solo agregamos una nueva si hay menos de 4
+        if (pacbolas_actuales < 4) {
+            p.grilla[fila][col] = 2;
+        }
+    }
+}
                     else if (herramienta == 3) {
                         int localX = (int)cx % (int)cellSize;
                         int localY = (int)cy % (int)cellSize;

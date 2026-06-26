@@ -135,7 +135,7 @@ void IniciarJuego(Partida *p, bool is_pvp, int dif[4], int m_pac, int m_fant, in
         CargarMapaPredeterminado(p, map_id);
     }
 
-    Color colores[4] = {RED, PINK, ORANGE, BLUE};
+    Color colores[4] = {RED, BLUE, PINK , ORANGE};
     for(int i = 0; i < 4; i++) {
         p->fantasmas[i].color = colores[i];
         if (dif[i] == 0) {
@@ -414,6 +414,9 @@ bool ControlarFantasmaPvP(Partida *p, int dir, bool quiere_poner_muro, Posicion 
             AgregarMuro(p, m1, m2, p->duracion_muros_global, 1);
             p->muros_mano_fantasmas--; 
             p->fantasma_actual_idx = (p->fantasma_actual_idx + 1) % 4;
+            while (p->fantasma_actual_idx != 0 && (!p->fantasmas[p->fantasma_actual_idx].activo || !p->fantasmas[p->fantasma_actual_idx].habilitado)) {
+                p->fantasma_actual_idx = (p->fantasma_actual_idx + 1) % 4;
+            }
             return true;
         }
         return false; 
@@ -468,6 +471,9 @@ bool ControlarFantasmaPvP(Partida *p, int dir, bool quiere_poner_muro, Posicion 
     }
 
     p->fantasma_actual_idx = (p->fantasma_actual_idx + 1) % 4;
+    while (p->fantasma_actual_idx != 0 && (!p->fantasmas[p->fantasma_actual_idx].activo || !p->fantasmas[p->fantasma_actual_idx].habilitado)) {
+        p->fantasma_actual_idx = (p->fantasma_actual_idx + 1) % 4;
+    }
     return true;
 }
 
