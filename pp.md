@@ -1,10 +1,9 @@
 # Presentacion De Bruno Verdun y Agustin Benavente
 
-## Introduccion, logica.c , logica.h, main.c
-```c
-<img width="709" height="187" alt="Captura de pantalla 2026-06-26 000906" src="https://github.com/user-attachments/assets/95afcc7e-4937-4d71-b52b-a680fcd47af0" />
+## Introduccion: logica.c , logica.h y main.c
 
-```
+(Poner una imagen?)
+
 ## El Bucle del programa 
 Para manejar el apartado gráfico utilizamos la librería indicada, raylib, que nos permite dibujar formas, mostrar imágenes y leer el teclado, funciona imprimiendo en la pantalla una serie de pixeles determinados por el código que terminan formando una imagen estática llamada fotograma, por cada pequeña variación borra el fotograma previo y genera otro, la rápida sucesión de estos fotogramas en un tiempo determinado permite crear la ilusión de movimiento.
 
@@ -19,8 +18,6 @@ El primer paso para la utilización de esta librería es establecer cuantos foto
 1. Input: Revisa si se presionó alguna tecla o se movió el mouse.
 2. Actualizacion: Hace los cálculos correspondientes, modifica variables, suma números, etc.
 3. Dibujado: Ejecuta todas las funciones visuales para plasmar los nuevos datos.
-
-Este bucle vendría a ser el elemento principal de nuestro main.c 
 
 ## Mecanicas del juego
 
@@ -276,23 +273,35 @@ if (p->cazando) {
 BeginDrawing();
     ClearBackground(GetColor(0x050510FF));
 ```
-Comenzamos el ciclo abriendo el buffer de memoria grafica y borrando todo el fotograma anterior con un fondo de color azul oscuro 
+Comenzamos el ciclo abriendo el buffer de memoria grafica y borrando todo el fotograma anterior con un fondo de color azul oscuro.
+
+El buffer de memoria grafica es una región de memoria (VRAM) dedicada exclusivamente a almacenar la imagen que se mostrará en el monitor.
 
 ### 2. Dibujar el menu principal 
 ```c
-int btnY = 90 + i * 40;
  if (p.estado_juego == 0) {
     DrawText("CONFIGURACIÓN DE PARTIDA", 150, 40, 32, YELLOW);
     DrawText("[Izquierda/Derecha] Cambiar valor  -  [ENTER] Aceptar", 180, 560, 15, LIGHTGRAY);
 
     for (int i = 0; i < 11; i++) {
+        int btnY = 90 + i * 40;
+        if (menu_sel == i) DrawRectangle(120, btnY, 560, 35, GetColor(0x11112CFF));
     .....
 ```
 Cuando el estado_juego sea igual a 0 signfica que estamos en el menu principal, con drawtext dibujamos en la pantalla los textos fijos del menu y el bucle nos permite crear cada una de las opciones de manera mas eficiente, dicho bucle recorre un arreglo de opciones y, en cada fotograma, consulta el valor de las variables de configuración y la posición del cursor (menu_sel), en caso de ser la opcion elegida se le dibuja una caja oscura y se cambia el color del texto a uno especifico, btnY permite espaciar las opciones de una manera sencilla y simetrica. 
 ```c
-if (menu_sel == i) DrawRectangle(120, btnY, 560, 35, GetColor(0x11112CFF));
-
-    if (i == 0) DrawText(TextFormat("Modo de Juego: %s", cfg_pvp ? "Player vs Player" : "IA vs Player"), 150, btnY + 10, 20, (menu_sel == i) ? WHITE : GRAY);
+if (i == 0) DrawText(TextFormat("Modo de Juego: %s", cfg_pvp ? "Player vs Player" : "IA vs Player"), 150, btnY + 10, 20, (menu_sel == i) ? WHITE : GRAY);
+                    else if (i == 1) DrawText(TextFormat("Blinky (Rojo): %s", str_dif[cfg_f_dif[0]]), 150, btnY + 10, 20, (menu_sel == i) ? WHITE : GRAY);
+                    else if (i == 2) DrawText(TextFormat("Inky (Cian): %s", str_dif[cfg_f_dif[1]]), 150, btnY + 10, 20, (menu_sel == i) ? WHITE : GRAY);
+                    else if (i == 3) DrawText(TextFormat("Pinky (Rosa): %s", str_dif[cfg_f_dif[2]]), 150, btnY + 10, 20, (menu_sel == i) ? WHITE : GRAY);
+                    else if (i == 4) DrawText(TextFormat("Clyde (Naranja): %s", str_dif[cfg_f_dif[3]]), 150, btnY + 10, 20, (menu_sel == i) ? WHITE : GRAY);
+                    else if (i == 5) DrawText(TextFormat("Muros Iniciales Pac-Man: %d", cfg_mpac), 150, btnY + 10, 20, (menu_sel == i) ? WHITE : GRAY);
+                    else if (i == 6) DrawText(TextFormat("Muros Iniciales Fantasmas: %d", cfg_mfant), 150, btnY + 10, 20, (menu_sel == i) ? WHITE : GRAY);
+                    else if (i == 7) DrawText(TextFormat("Tiempo de Vida de Muros: %d", cfg_dur), 150, btnY + 10, 20, (menu_sel == i) ? WHITE : GRAY);
+                    else if (i == 8) DrawText(TextFormat("Mapa a Jugar: %s", str_mapa[cfg_mapa]), 150, btnY + 10, 20, (menu_sel == i) ? WHITE : GRAY);
+                    else if (i == 9) DrawText("-> ¡INICIAR JUEGO!", 150, btnY + 10, 20, (menu_sel == i) ? GREEN : LIME);
+                    else if (i == 10) DrawText("-> ABRIR EDITOR DE MAPAS", 150, btnY + 10, 20, (menu_sel == i) ? PURPLE : MAGENTA);
+                }
 ```
 
 ### 3. El Motor del tablero 
@@ -312,7 +321,7 @@ Utilizamos el Algoritmo del Pintor, que consiste en dibujar la escena en capas, 
                     for (int j = 0; j < p.cols; j++) DrawRectangleLines(offsetX + j * cellSize, offsetY + i * cellSize, cellSize, cellSize, DARKGRAY);
                 }
 ```
-Con el primer bucle recorremos la matriz p.grilla. En este bucle, si detectamos un valor 2, dibujamos una pac-bola. El secreto aquí es la matemática de posicionamiento: calculamos el centro de cada celda sumando el offset (margen) más la mitad del tamaño de la celda (cellSize/2). Esto garantiza que los objetos siempre queden perfectamente centrado, mientras que con el segundo creamos el de dibujo de cuadricula del mapa creando el contorno Lines de cada celda.
+Con el primer bucle recorremos la matriz p.grilla. En este bucle, si detectamos un valor 2, dibujamos una pac-bola. Mediante matemática de posicionamiento calculamos el centro de cada celda sumando el offset (margen) más la mitad del tamaño de la celda (cellSize/2). Esto garantiza que los objetos siempre queden perfectamente centrados, mientras que con el segundo creamos el de dibujo de cuadrícula del mapa creando el contorno Lines de cada celda.
 
 ### 3.2 Logica de Muros 
 ```c
@@ -330,7 +339,7 @@ for (int i = 0; i < p.cant_muros; i++) {
             }
 }
 ```
-El sistema de muros utiliza una lógica de orientación absoluta. Se almacena los muros mediante dos puntos extremos. En el renderizado, analizamos la diferencia entre las coordenadas (f, c) de ambos puntos para determinar su orientación. Por lo cual la orientacion se deriva directamente de la geometría del muro en la matriz.
+El sistema de muros utiliza una lógica de orientación absoluta. Se almacenan los muros mediante dos puntos extremos. En el renderizado, analizamos la diferencia entre las coordenadas (f, c) de ambos puntos para determinar su orientación. Por lo cual la orientación se deriva directamente de la geometría del muro en la matriz.
 
 ### 3.3 Entidades y animacion 
 ```c
@@ -342,7 +351,7 @@ for (int i = 0; i < 4; i++) {
                         float fy = offsetY + p.fantasmas[i].pos.f * cellSize + cellSize/2;
                         ........
 ```
-Dibujamos a pac-man y a cada uno de los fantasmas que esten habilitados y que todavia no hayan sido comidos por pac-man y los dinujan en el centro de sus respectivas casillas.
+Dibujamos a pac-man y a cada uno de los fantasmas que estén habilitados y que todavía no hayan sido comidos por pac-man en el centro de sus respectivas casillas.
 ```c
 Color colorActual;
     if (p.estado_juego == 1 && p.cazando) {
@@ -368,7 +377,7 @@ Color colorActual;
         DrawCircle(fx + cellSize*0.1f, fy - cellSize*0.06f, cellSize*0.03f, BLACK);
     }
 ```
-El renderizado de los fantasmas funciona mediante un sistema de composición geométrica. En lugar de cargar archivos de imagen, construimos cada fantasma como un objeto compuesto por círculos y rectángulos. Se utiliza la sincronizacion de estados mediante GetTime() para causar cambios visuales en tiempo real, como el parpadeo en el modo 'cazando' o el indicador de seleccion en PvP. Esto permite al usuario identificar el estado lógico del juego (quién es vulnerable, de quién es el turno) simplemente mirando la pantalla, sin necesidad de consultar el HUD lateral.
+El renderizado de los fantasmas funciona mediante un sistema de composición geométrica. En lugar de cargar archivos de imagen, construimos cada fantasma como un objeto compuesto por círculos y rectángulos. Se utiliza la sincronización de estados mediante GetTime() para causar cambios visuales en tiempo real, como el parpadeo en el modo 'cazando' o el indicador de selección en PvP. Esto permite al usuario identificar el estado lógico del juego (quién es vulnerable, de quién es el turno) simplemente mirando la pantalla, sin necesidad de consultar el HUD lateral.
 
 ## 4. La Interfaz Lateral 
 ```c
@@ -378,15 +387,13 @@ DrawRectangle(548, 0, 252, 600, BLACK);
 if (p.estado_juego == 1) {
     DrawText("QUORIDOR", 565, 20, 24, BLUE);
     DrawText("PAC-MAN", 565, 45, 24, YELLOW);
+.......
 ```
 Primero creamos los graficos estaticos de la interfaz, la linea divisora azul y el rectangulo negro del fondo ademas de los textos QUORIDOR y PAC-MAN.
 
 ### 4.1 Monitoreo de Datos en Tiempo Real
 ```c
-if (p.estado_juego == 1) {
-                    DrawText("QUORIDOR", 565, 20, 24, BLUE);
-                    DrawText("PAC-MAN", 565, 45, 24, YELLOW);
-                    
+......
                     DrawText(p.es_pvp ? "MODO: PVP LOCAL" : "MODO: VS COMPUTADORA", 565, 75, 13, SKYBLUE);
                     DrawLine(565, 95, 765, 95, DARKGRAY);
 
@@ -400,8 +407,7 @@ if (p.estado_juego == 1) {
                         DrawText("¡CAZA ACTIVA!", 565, 250, 18, SKYBLUE);
                     }
 ```
-Transforma las variables logicas internas del juego en texto dinamico para el jugador utilizando TextFormat(TextFormat es una funcion de raylibb que permite combinar texto estatico con variables dinamicas ya que las funciones de dibujado de raylib no permiten combinar enteros con caracteres), cambia dinamicamente el color de Vidas a rojo cuando solo queda una y avisa al jugador de la inversion de roles e inicio del modo caza cuando Pac-man come una pac-bola.
-(Averiguar que son los numeros en cada dratext y porque son estaticos )
+Transforma las variables lógicas internas del juego en texto dinámico para el jugador utilizando TextFormat, cambia dinámicamente el color de Vidas a rojo cuando solo queda una y avisa al jugador de la inversión de roles e inicio del modo caza cuando Pac-man come una pac-bola.
 ### 4.2 Maquina de Estados de Turnos 
 ```c
 DrawLine(565, 275, 765, 275, DARKGRAY);
@@ -430,7 +436,7 @@ if (p.pacman.acciones > 0) {
 ```
 Este bloque implementa la lógica de renderizado condicional para la gestión de turnos. Funciona como una estructura anidada que actúa según el estado de los datos. El primer nivel evalúa las acciones restantes de Pac-Man para separar el turno del atacante del turno de los defensores.
 
-En el segundo nivel, el HUD altera por completo su layout gráfico: si la partida es contra la Inteligencia Artificial, dibuja un contenedor de alerta para sincronizar el procesamiento del algoritmo de búsqueda; si la partida es PvP, renderiza un contenedor informativo para el Jugador 2 que mapea dinámicamente el color del fantasma seleccionado mediante operaciones condicionales y le explicita su esquema de entrada por teclado
+En el segundo nivel, el HUD altera por completo su layout gráfico: si la partida es contra la Inteligencia Artificial, dibuja un contenedor de alerta para sincronizar el procesamiento del algoritmo de búsqueda; si la partida es PvP, renderiza un contenedor informativo para el Jugador 2 que establece dinámicamente el color del fantasma seleccionado mediante operaciones condicionales para mayor claridad. 
 
 ## 5. Editor de Mapas 
 ```c
@@ -450,8 +456,8 @@ else if (p.estado_juego == 4) {
                     DrawText("[M] VOLVER AL MENÚ", 575, 480, 15, GRAY);
                 }
 ```
-Dibuja todas las opciones e informacion del editor de mapas ademas de una ayuda visual para que el jugador sepa que opcion tiene seleccionada.
-## 5. Pantallas de Fin de Partida 
+Dibuja todas las opciones e información del editor de mapas además de una ayuda visual para que el jugador sepa qué opción tiene seleccionada.
+## 6. Pantallas de Fin de Partida 
 ```c
 if (p.estado_juego == 2 || p.estado_juego == 3) { 
                     DrawRectangle(0, 0, 800, 600, Fade(BLACK, 0.88f));
@@ -482,5 +488,5 @@ if (p.estado_juego == 2 || p.estado_juego == 3) {
 
         EndDrawing();
 ```
-Se utiliza la funcion Fade para superponer un rectangulo negro con una opacidad del 88% para dar un efecto de oscurecimiento al activarse la pantalla de fin de partida, luego a nivel logico se procesan los resultados obtenidos en la partida guardados en las variables correspondientes para determinar un nivel de exito o fracaso, los textos y colores dibujados estan basados en ese nivel de exito, finalmente se implemente un algoritmo de centrado utilizando MeasureText que calcula dinamicamente el ancho del rango de pixeles obtenidos para ubicarse en ele centro.
+Se utiliza la funcion Fade para superponer un rectangulo negro con una opacidad del 88% para dar un efecto de oscurecimiento al activarse la pantalla de fin de partida, luego a nivel logico se procesan los resultados obtenidos en la partida guardados en las variables correspondientes para determinar un nivel de exito o fracaso, los textos y colores dibujados estan basados en ese nivel de exito, finalmente se implemente un algoritmo de centrado utilizando MeasureText que calcula dinamicamente el ancho del rango de pixeles obtenidos para ubicarse en el centro.
 
