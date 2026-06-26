@@ -204,6 +204,9 @@ dist[inicio.f][inicio.c] = 0;
 queue[tail++] = inicio;
 ```
 
+<img width="693" height="368" alt="Captura de pantalla 2026-06-25 a la(s) 22 16 02" src="https://github.com/user-attachments/assets/f40bd188-e994-470e-a015-7e19b4e177cb" />
+
+
 ## 3.3. La Propagación de la Onda Matemática
 El algoritmo extrae posiciones de la cabeza de la cola y expande la búsqueda en sus 4 celdas vecinas. Si un vecino es válido (no cruza un muro bloqueado) y no ha sido visitado, se registra su distancia.
 
