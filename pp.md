@@ -271,6 +271,87 @@ if (p->cazando) {
  ACA te dejo el espacio para que pongas todo lo otro y abajo de la raya yo pongo lo del guardado
  ___________________________________
 
+### Como guardamos el mapa
+```c
+bool GuardarMapaPersonalizado(const char *nombreArchivo, MapaGuardado *mapa) {
+    FILE *archivo = fopen(nombreArchivo, "wb"); 
+    if (archivo == NULL) return false;
+
+    fwrite(mapa, sizeof(MapaGuardado), 1, archivo);
+    fclose(archivo);
+    return true;
+}
+```
+Entonces Nosotros Usamos binario porque nos permite hacer un "volcado de memoria" (memory dump) instantáneo, copiando la estructura de tu mapa exactamente como existe en la RAM y sin perder usando bucles for ni nada, sin perder tiempo traduciéndola a letras y números legibles.utilizamos fwrite para agarrar la fotografia que sacamos.
+
+### como cargamos el mapa
+
+### Lectura Binaria (Sacando los datos del disco)
+```c
+FILE *archivo = fopen(nombreArchivo, "rb"); 
+    if (archivo == NULL) return false;
+
+    MapaGuardado mapa;
+    fread(&mapa, sizeof(MapaGuardado), 1, archivo);
+    fclose(archivo);
+```
+Basicamente hacemos el inverso de guardar creamos una variable temporal mapa y hacemos el fread para guardar
+la informacion en mapa.
+
+### La Demolición (Limpiando el mapa viejo)
+```c
+int filasViejas = p->filas;
+    
+    if (p->grilla != NULL) {
+        for(int i = 0; i < filasViejas; i++) free(p->grilla[i]);
+        free(p->grilla);
+    }
+```
+como es una matriz dinamica no podemos usar un solo free entonces liberamos primero las filas.
+
+### La Reconstrucción (Pidiendo nueva memoria)
+```c
+p->filas = mapa.filas;
+    p->cols = mapa.cols;
+
+    p->grilla = malloc(p->filas * sizeof(int *));
+    for(int i = 0; i < p->filas; i++) {
+        p->grilla[i] = malloc(p->cols * sizeof(int));
+        for(int j = 0; j < p->cols; j++) {
+            p->grilla[i][j] = mapa.grilla[i][j];
+        }
+    }
+```
+Actualizar dimensiones: El mapa nuevo podría ser de 15x15 o de 5x5. Actualizamos las variables de la partida (p->filas y p->cols) a las dimensiones que leímos del archivo.
+
+### Gestión Dinámica de los Muros
+```c
+free(p->muros);
+    p->cant_muros = mapa.cant_muros;
+    if (p->cant_muros > 0) {
+        p->muros = malloc(p->cant_muros * sizeof(Muro));
+        for(int i = 0; i < p->cant_muros; i++) {
+            p->muros[i] = mapa.muros[i];
+        }
+    } else p->muros = NULL;
+
+```
+aqui borramos los muros del mapa antiguo y asignamos la nueva cantidad de muros y si es mayor a 0 hacemos los malloc conrrespondientes y asignamos a nuestro mapa
+y si es 0 colocamos en NULL por seguridad.
+
+### Ubicación de los Actores
+```c
+p->pacman.pos_inicial = mapa.pos_pacman;
+    p->pacman.pos = mapa.pos_pacman;
+    for(int i=0; i<4; i++) {
+        p->fantasmas[i].pos_inicial = mapa.pos_fantasmas[i];
+        p->fantasmas[i].pos = mapa.pos_fantasmas[i];
+    }
+
+    return true;
+}
+```
+Se las asignas tanto a su posición actual (pos) como a su pos_inicial (para que cuando mueran y hagan respawn, reaparezcan correctamente en esas posiciones personalizadas y no en las por defecto).
 
 ## Dibujado 
 
