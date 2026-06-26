@@ -1,16 +1,23 @@
 # Presentacion De Bruno Verdun y Agustin Benavente
-## El Bucle del programa 
-Para manejar el apartado grafico utilizamos la libreria indicada, raylib, que nos permite dibujar formas, mostrar imagenes y leer el teclado, funciona imprimiendo en la pantalla una serie de pixeles determinados por el codigo que terminan formando una imagen estatica llamada fotograma, por cada pequeña varaciacion borra el fotograma previo y genera otro, la rapida sucesion de estos fotgramas en un tiempo determinado permite crear la ilusion de movimiento.
 
-Lo primero que debemos hacer es establecer cuantos fotogramas queremos que pasen en un segundo (framerate), para este juego usamos un framerate comun en los programas modernos de 60 fps, luego creamos el bucle principal del programa while (!WindowShouldClose())) hace que el bucle que crea cada fotograma se repita hasta que la ventana del programa se cierre, cada vuelta del bucle consta de tres fases:
+## Introduccion, logica.c , logica.h, main.c
+
+## El Bucle del programa 
+Para manejar el apartado gráfico utilizamos la librería indicada, raylib, que nos permite dibujar formas, mostrar imágenes y leer el teclado, funciona imprimiendo en la pantalla una serie de pixeles determinados por el código que terminan formando una imagen estática llamada fotograma, por cada pequeña variación borra el fotograma previo y genera otro, la rápida sucesión de estos fotogramas en un tiempo determinado permite crear la ilusión de movimiento.
+
 ```c
 SetTargetFPS(60);
 
 while (!WindowShouldClose()) {
 ```
-1. Input: Revisa si presionaste alguna tecla o moviste el mouse.
-2. Actualizacion: Hace los calculos correspondientes, modifica variables suma numeros etc.
+
+El primer paso para la utilización de esta librería es establecer cuantos fotogramas queremos que pasen en un segundo (framerate), para este juego usamos un framerate estándar de 60 fps, luego creamos el bucle principal del programa while (!WindowShouldClose())) esta función hace que el bucle que crea cada fotograma se repita hasta que la ventana del programa se cierre, cada vuelta del bucle consta de tres fases:
+
+1. Input: Revisa si se presionó alguna tecla o se movió el mouse.
+2. Actualizacion: Hace los cálculos correspondientes, modifica variables, suma números, etc.
 3. Dibujado: Ejecuta todas las funciones visuales para plasmar los nuevos datos.
+
+Este bucle vendría a ser el elemento principal de nuestro main.c 
 
 ## Mecanicas del juego
 
