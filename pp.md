@@ -321,7 +321,7 @@ Utilizamos el Algoritmo del Pintor, que consiste en dibujar la escena en capas, 
                     for (int j = 0; j < p.cols; j++) DrawRectangleLines(offsetX + j * cellSize, offsetY + i * cellSize, cellSize, cellSize, DARKGRAY);
                 }
 ```
-Con el primer bucle recorremos la matriz p.grilla. En este bucle, si detectamos un valor 2, dibujamos una pac-bola. Mediante matemática de posicionamiento calculamos el centro de cada celda sumando el offset (margen) más la mitad del tamaño de la celda (cellSize/2). Esto garantiza que los objetos siempre queden perfectamente centrados, mientras que con el segundo creamos el de dibujo de cuadrícula del mapa creando el contorno Lines de cada celda.
+Con el primer bucle recorremos la matriz p.grilla. En este bucle, si detectamos un valor 2, dibujamos una pac-bola. Mediante matemática de posicionamiento calculamos el centro de cada celda sumando el offset (margen) más la mitad del tamaño de la celda (cellSize/2). Esto garantiza que los objetos siempre queden perfectamente centrados, mientras que con el segundo creamos la cuadrícula del mapa dibujando el contorno Lines de cada celda.
 
 ### 3.2 Logica de Muros 
 ```c
