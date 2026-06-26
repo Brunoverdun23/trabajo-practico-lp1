@@ -267,6 +267,11 @@ if (p->cazando) {
     }
 }
 ```
+## Editor
+ ACA te dejo el espacio para que pongas todo lo otro y abajo de la raya yo pongo lo del guardado
+ ___________________________________
+
+
 ## Dibujado 
 
 ### 1. Preparacion del Fotograma 
